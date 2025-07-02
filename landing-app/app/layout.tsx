@@ -59,7 +59,7 @@ export default function RootLayout({
 
 const Footer = () => {
   return (
-    <footer className="bg-primary-700 dark:bg-secondary-700 text-white dark:text-primary-700">
+    <footer className="bg-primary-700 dark:bg-[#E8A9C5] text-white dark:text-primary-700">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid g  rid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Section */}

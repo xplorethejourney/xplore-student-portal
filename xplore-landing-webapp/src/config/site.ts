@@ -1,3 +1,5 @@
+import { FacebookIcon } from "@/components/icons";
+
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
@@ -63,7 +65,8 @@ export const siteConfig = {
     github: "https://github.com/xplorewithpranjal/xplorewithpranjal",
     docs: "https://github.com/xplorewithpranjal/xplorewithpranjal",
     instagram: "https://www.instagram.com/xplorewithpranjal/",
-    linkedin: "https://www.linkedin.com"
+    linkedin: "https://www.linkedin.com",
+    facebook: "https://www.facebook.com/xplorewithpranjal"
 
   },
 };
