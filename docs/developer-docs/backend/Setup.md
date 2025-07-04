@@ -1,6 +1,4 @@
-# Firebase Setup for Xplore Backend
-
-The firebase app is registered for hosting on firebase platform.
+# Xplore Backend Setup
 
 ## How to contribute
 
@@ -19,11 +17,3 @@ git clone https://github.com/xplorethejourney/xplore-student-portal.git
 ```
 git checkout backend
 ```
-
-4. Install Firebase SDK
-
-```
-npm install firebase
-```
-
-5. 
