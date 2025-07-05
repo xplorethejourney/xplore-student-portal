@@ -1,5 +1,7 @@
 # Xplore: Discover, Attend, or Launch Your Own Events!
 
+> Checkout the [developer docs](developer-docs/index.md) to start working on the project.
+
 Xplore is a web app and mobile app campus-oriented platform  that allows students to discover, attend, or launch their own events in their college campus.
 
 ## Pain points solved by Xplore
