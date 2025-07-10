@@ -114,7 +114,7 @@ export const signin = async (
     }
 
     const isVerified = validUser.isVerified
-    if(!isVerified) {return res.status(401).json({error:"Verify your email first"}).redirect("http://localhost:8989/api/auth/signup")}
+    if(!isVerified) {return res.status(401).json({error:"Verify your email first"}).redirect(`${process.env.FRONTEND_LINK}/api/auth/signup`)}
 
     const token = jwt.sign({ id: validUser._id }, jwtSecret, {
       expiresIn: "2d", //^ Token expires in 2 days
@@ -150,7 +150,7 @@ export const verifyTokenAndRedirect = async (
     );
     if (!updatedUser) return res.status(404).json({ error: "user not found" });
 
-    return res.redirect("http://localhost:8989/signin?verified=true");
+    return res.redirect(`${process.env.FRONTEND_LINK}/signin?verified=true`);
   } catch (error) {
     console.error(
       "Error in verifytoken ",

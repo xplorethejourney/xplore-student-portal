@@ -16,7 +16,7 @@ export const SendVerifyLink = async (email: string): Promise<void> => {
     },
   });
 
-  const verifyLink = `http://localhost:8989/api/auth/signup/verify?token=${generateToken(email)}`;
+  const verifyLink = `${process.env.FRONTEND_LINK}/api/auth/signup/verify?token=${generateToken(email)}`;
 
   try {
     const info = await transporter.sendMail({
