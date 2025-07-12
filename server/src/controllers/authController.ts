@@ -4,7 +4,13 @@ import { errorHandler } from "../utils/errorHandler";
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JwtPayload, SignupDTO, SigninDTO } from "../types/auth.types";
-import { SendVerifyLink } from "../middleware/authMiddleware";
+import {
+  SendPasswordResetLink,
+  SendVerifyLink,
+} from "../middleware/authMiddleware";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env.prod" });
 
 const jwtSecret = process.env.JWT_SECRET as string;
 
@@ -48,21 +54,20 @@ export const signup = async (
   try {
     const isUserExist = await UserModel.findOne({ email }).lean();
 
-    if (isUserExist && isUserExist.isVerified===true)
+    if (isUserExist && isUserExist.isVerified === true)
       return res
         .status(400)
         .json({ message: "user already exist", success: false });
 
-    if (isUserExist && isUserExist.isVerified===false)
-    { 
+    if (isUserExist && isUserExist.isVerified === false) {
       await SendVerifyLink(email)
-      .then(() => {
-        res.status(200).json("Verification Link Sent to Email");
-      })
-      .catch(() => {
-        res.status(408).json("Internal Server Error, Unable to send link");
-      });
-      return ;
+        .then(() => {
+          res.status(200).json("Verification Link Sent to Email");
+        })
+        .catch(() => {
+          res.status(408).json("Internal Server Error, Unable to send link");
+        });
+      return;
     }
 
     await SendVerifyLink(email)
@@ -99,7 +104,7 @@ export const signin = async (
   req: Request<{}, {}, SigninDTO>,
   res: Response,
   next: NextFunction
-) => {
+): Promise<Response | any> => {
   const { email, password } = req.body;
 
   try {
@@ -113,8 +118,11 @@ export const signin = async (
       return next(errorHandler(401, "Wrong credentials"));
     }
 
-    const isVerified = validUser.isVerified
-    if(!isVerified) {return res.status(401).json({error:"Verify your email first"}).redirect(`${process.env.FRONTEND_LINK}/api/auth/signup`)}
+    const isVerified = validUser.isVerified;
+
+    if (!isVerified) {
+      return res.status(401).json({ error: "Verify your email first" });
+    }
 
     const token = jwt.sign({ id: validUser._id }, jwtSecret, {
       expiresIn: "2d", //^ Token expires in 2 days
@@ -150,10 +158,12 @@ export const verifyTokenAndRedirect = async (
     );
     if (!updatedUser) return res.status(404).json({ error: "user not found" });
 
-    return res.redirect(`${process.env.FRONTEND_LINK}/signin?verified=true`);
+    return res
+      .status(201)
+      .json({ success: true, message: "Email Verified,U Can Login Now" });
   } catch (error) {
     console.error(
-      "Error in verifytoken ",
+      "Error in verifing token ",
       error instanceof Error ? error.message : error
     );
   }
@@ -163,7 +173,7 @@ export const signout = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<void>=> {
   try {
     res.clearCookie("access_token");
     res.status(200).json({
@@ -172,6 +182,69 @@ export const signout = async (
     });
   } catch (error) {
     next(error);
+    
+  }
+};
+
+export const forgotPasswordLink = async (
+  req: Request,
+  res: Response
+): Promise<Response | any> => {
+  const { email } = req.body;
+
+  const isValidUser = await UserModel.findOne({ email }).lean();
+
+  if (!isValidUser)
+    return res.status(404).json({ error: "User does not exist" });
+
+  await SendPasswordResetLink(email)
+    .then(() => {
+      console.log("Password Reset Link Sent ");
+      res.json({
+        success: true,
+        message: "Password Reset Link Sent To Registered Email",
+      });
+    })
+    .catch((error) => {
+      console.error(
+        "Error occoured in sending password reset link",
+        error instanceof Error ? error.message : error
+      );
+      res.status(401).json({
+        success: false,
+        message: "Failed To Send Password Reset Link, Try Again Later",
+      });
+    });
+};
+
+export const ResetPasswordAndRedirect = async (
+  req: Request,
+  res: Response
+): Promise<Response | any> => {
+  const token = req.query.token as string;
+  const { NewPassword } = req.body;
+  if (!token || !NewPassword) {
+    return res.status(400).json({ error: "Missing token or new password" });
+  }
+  try {
+    const payload = jwt.verify(token, jwtSecret) as { email: string };
+    const user = await UserModel.findOne({ email: payload.email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const hashed = await hash(NewPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Password reset successful" });
+  } catch (error) {
+    console.error(
+      "Error Occoured in Reseting Password",
+      error instanceof Error ? error.message : error
+    );
+    return res
+      .status(400)
+      .json({ success: false, error: "Error Occoured in Reseting Password" });
   }
 };
 
@@ -181,4 +254,6 @@ export default {
   signout,
   deleteUser,
   verifyTokenAndRedirect,
+  forgotPasswordLink,
+  ResetPasswordAndRedirect,
 };
