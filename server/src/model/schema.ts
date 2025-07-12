@@ -31,7 +31,6 @@ interface User {
             isVerified:{
                     type:Boolean,
                     default:false
-
             }
 })
 
